@@ -1012,6 +1012,8 @@ static void auth_cb(DBusError *derr, void *user_data)
 {
 	struct control *control = user_data;
 	GError *err = NULL;
+	struct audio_device *dev = control->dev;
+	struct avdtp *session;
 
 	if (control->io_id) {
 		g_source_remove(control->io_id);
@@ -1022,6 +1024,16 @@ static void auth_cb(DBusError *derr, void *user_data)
 		error("Access denied: %s", derr->message);
 		avctp_set_state(control, AVCTP_STATE_DISCONNECTED);
 		return;
+	}
+
+	if (dev->sink &&
+		!avdtp_is_connected(&dev->src, &dev->dst)) {
+		session = avdtp_get(&dev->src, &dev->dst);
+		if (session) {
+			DBG("sending connect");
+			sink_setup_stream(dev->sink, session);
+			avdtp_unref(session);
+		}
 	}
 
 	if (!bt_io_accept(control->io, avctp_connect_cb, control,
