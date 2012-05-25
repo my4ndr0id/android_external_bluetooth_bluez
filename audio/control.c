@@ -1466,32 +1466,46 @@ static DBusMessage *update_metadata(DBusConnection *conn, DBusMessage *msg,
 			total_media_count, playing_time, genre);
 	if (strlen(title) < METADATA_MAX_STRING_LEN)
 		strcpy(mdata->title, title);
-	else
+	else {
 		strncpy(mdata->title, title, (METADATA_MAX_STRING_LEN-1));
+		mdata->title[METADATA_MAX_STRING_LEN-1] = '\0';
+	}
 	if (strlen(artist) < METADATA_MAX_STRING_LEN)
 		strcpy(mdata->artist, artist);
-	else
+	else {
 		strncpy(mdata->artist, artist, (METADATA_MAX_STRING_LEN-1));
+		mdata->artist[METADATA_MAX_STRING_LEN-1] = '\0';
+	}
 	if (strlen(album) < METADATA_MAX_STRING_LEN)
 		strcpy(mdata->album, album);
-	else
+	else {
 		strncpy(mdata->album, album, (METADATA_MAX_STRING_LEN-1));
+		mdata->album[METADATA_MAX_STRING_LEN-1] = '\0';
+	}
 	if (strlen(media_number) < METADATA_MAX_NUMBER_LEN)
 		strcpy(mdata->media_number, media_number);
-	else
+	else {
 		strncpy(mdata->media_number, media_number, (METADATA_MAX_NUMBER_LEN-1));
+		mdata->media_number[METADATA_MAX_STRING_LEN-1] = '\0';
+	}
 	if (strlen(total_media_count) < METADATA_MAX_NUMBER_LEN)
 		strcpy(mdata->total_media_count, total_media_count);
-	else
+	else {
 		strncpy(mdata->total_media_count, total_media_count, (METADATA_MAX_NUMBER_LEN-1));
+		mdata->total_media_count[METADATA_MAX_STRING_LEN-1] = '\0';
+	}
 	if (strlen(playing_time) < METADATA_MAX_NUMBER_LEN)
 		strcpy(mdata->playing_time, playing_time);
-	else
+	else {
 		strncpy(mdata->playing_time, playing_time, (METADATA_MAX_NUMBER_LEN-1));
+		mdata->playing_time[METADATA_MAX_STRING_LEN-1] = '\0';
+	}
 	if (strlen(genre) < METADATA_MAX_STRING_LEN)
 		strcpy(mdata->genre, genre);
-	else
+	else {
 		strncpy(mdata->genre, genre, (METADATA_MAX_STRING_LEN-1));
+		mdata->genre[METADATA_MAX_STRING_LEN-1] = '\0';
+	}
 
 	return dbus_message_new_method_return(msg);
 }
@@ -1813,13 +1827,13 @@ static int send_meta_data(struct control *control, uint8_t trans_id,
 	int meta_data_len = strlen(mdata->title) + strlen(mdata->artist) +
 		strlen(mdata->album) + strlen(mdata->media_number) +
 		strlen(mdata->total_media_count) + strlen(mdata->playing_time) +
-		(METADATA_FIELD_LEN*att_count) + header_len;
-	unsigned char buf[meta_data_len];
+		strlen(mdata->genre) + (METADATA_FIELD_LEN*att_count) + header_len;
+	unsigned char *buf = g_new0(unsigned char, meta_data_len);
 	struct avctp_header *avctp = (void *) buf;
 	struct avrcp_header *avrcp = (void *) &buf[AVCTP_HEADER_LENGTH];
 	struct avrcp_params *params = (struct avrcp_params *)(&buf[AVCTP_HEADER_LENGTH + AVRCP_HEADER_LENGTH]);
 	struct meta_data_field *mdata_field = (struct meta_data_field *)(&buf[header_len]);
-	int len = 0, total_len =0, sk = g_io_channel_unix_get_fd(control->io);
+	int len = 0, total_len =0, sk = g_io_channel_unix_get_fd(control->io), ret = 0;
 	uint8_t *op = &buf[AVCTP_HEADER_LENGTH + AVRCP_HEADER_LENGTH];
 
 	memset(buf, 0, sizeof(buf));
@@ -1956,6 +1970,7 @@ static int send_meta_data(struct control *control, uint8_t trans_id,
 		meta_data_len = meta_data_len - len + 1;
 		mdata->remaining_mdata = g_new0(gchar, meta_data_len);
 		if (!(mdata->remaining_mdata)) {
+			g_free(buf);
 			return -ENOMEM;
 		}
 		mdata->remaining_mdata_len = meta_data_len;
@@ -1967,7 +1982,9 @@ static int send_meta_data(struct control *control, uint8_t trans_id,
 		params->param_len = htons(meta_data_len+1);
 		total_len = meta_data_len + header_len;
 	}
-	return write(sk, buf, total_len);
+	ret = write(sk, buf, total_len);
+	g_free(buf);
+	return ret;
 }
 
 static int send_notification(struct control *control,
