@@ -1393,11 +1393,13 @@ static DBusMessage *update_notification(DBusConnection *conn, DBusMessage *msg,
 
 	DBG("Notification data is %d %d", (int)event_id, (int)event_data);
 
-	if (control->state != AVCTP_STATE_CONNECTED)
+	if (control->state != AVCTP_STATE_CONNECTED) {
+		if (event_id == EVENT_PLAYBACK_STATUS_CHANGED && mdata != NULL)
+			mdata->current_play_status = (uint8_t)event_data;
 		return g_dbus_create_error(msg,
 			ERROR_INTERFACE ".NotConnected",
 				"Device not Connected");
-
+	}
 	send_notification(control, event_id, event_data);
 
 	return dbus_message_new_method_return(msg);
