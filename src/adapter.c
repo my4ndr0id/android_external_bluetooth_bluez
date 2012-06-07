@@ -3200,6 +3200,33 @@ static void create_stored_device_from_linkkeys(char *key, char *value,
 	}
 }
 
+static void create_stored_device_from_le_keys(char *key, char *value,
+							void *user_data)
+{
+	struct btd_adapter *adapter = user_data;
+	struct btd_device *device;
+	char address[18];
+
+	/* Ignore the "lasthash" key */
+	if (strcmp(key, "lasthash") == 0)
+		return;
+
+	sscanf(value, "%17s", address);
+	address[17] = '\0';
+
+	DBG("%s", address);
+
+	if (g_slist_find_custom(adapter->devices, address,
+					(GCompareFunc) device_address_cmp))
+		return;
+
+	device = device_create(connection, adapter, address, DEVICE_TYPE_LE);
+	if (device) {
+		device_set_temporary(device, FALSE);
+		adapter->devices = g_slist_append(adapter->devices, device);
+	}
+}
+
 static void read_used_le_keys(char *key, char *value, void *user_data)
 {
 	struct adapter_keys *keys = user_data;
@@ -3349,6 +3376,8 @@ static void load_devices(struct btd_adapter *adapter)
 	textfile_foreach(filename, create_stored_device_from_linkkeys, &keys);
 
 	create_name(filename, PATH_MAX, STORAGEDIR, srcaddr, "lekeys");
+	textfile_foreach(filename, create_stored_device_from_le_keys,
+								adapter);
 	textfile_foreach(filename, read_used_le_keys, &keys);
 
 	err = adapter_ops->load_keys(adapter->dev_id, keys.keys,
