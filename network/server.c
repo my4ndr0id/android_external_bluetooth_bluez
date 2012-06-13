@@ -727,7 +727,6 @@ static gboolean authorization_handler(gpointer user_data)
 	ba2str(&na->setup->dst, peer_addr);
 	dev = adapter_find_device(adapter, peer_addr);
 	if (!dev) {
-		setup_destroy(na);
 		goto drop;
 	}
 	/*return TRUE while device is authenticating so
@@ -743,12 +742,12 @@ static gboolean authorization_handler(gpointer user_data)
 	if (perr < 0) {
 		error("Refusing connect from %s: %s (%d)", peer_addr,
 				strerror(-perr), -perr);
-		setup_destroy(na);
 		goto drop;
 	}
 	return FALSE;
 drop:
 	g_io_channel_shutdown(na->setup->io, TRUE, NULL);
+	setup_destroy(na);
 	return FALSE;
 }
 
