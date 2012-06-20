@@ -1258,9 +1258,14 @@ void avdtp_unref(struct avdtp *session)
 
 		if (session->io)
 			set_disconnect_timer(session, DISCONNECT_TIMEOUT);
-		else if (!session->free_lock) /* Drop the local ref if we
-						 aren't connected */
-			session->ref--;
+		else {
+			if (!session->free_lock) /* Drop the local ref if we
+						aren't connected */
+				session->ref--;
+			avdtp_set_state(session,
+					AVDTP_SESSION_STATE_DISCONNECTED);
+		}
+
 	}
 
 	if (session->ref > 0)
@@ -4068,4 +4073,13 @@ gboolean avdtp_remove_state_cb(unsigned int id)
 	}
 
 	return FALSE;
+}
+
+void avdtp_disconnect_session(struct avdtp *session)
+{
+	if (session->io) {
+		g_io_channel_shutdown(session->io, FALSE, NULL);
+		g_io_channel_unref(session->io);
+		session->io = NULL;
+	}
 }
