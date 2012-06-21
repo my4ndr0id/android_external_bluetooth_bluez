@@ -520,7 +520,8 @@ static void *_out_buf_thread_func(void *context)
                 pthread_mutex_unlock(&out->lock);
 
                 if (ret < 0) {
-                    LOGE("%s: a2dp_write failed (%d)\n", __func__, ret);
+                    if (ret != -EINPROGRESS)   //not a Signaling start
+                        LOGE("%s: a2dp_write failed (%d)\n", __func__, ret);
                     /* skip pending frames in case of write error */
                     _out_inc_rd_idx_locked(out, frames);
                     break;
