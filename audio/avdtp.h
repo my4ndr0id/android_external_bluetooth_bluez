@@ -331,3 +331,4 @@ void avdtp_exit(const bdaddr_t *src);
 void copy_capabilities(gpointer data, gpointer user_data);
 gboolean avdtp_get_protection_req(struct avdtp *session);
 void avdtp_set_protection_req(struct avdtp *session, gboolean value);
+void avdtp_disconnect_session(struct avdtp *session);

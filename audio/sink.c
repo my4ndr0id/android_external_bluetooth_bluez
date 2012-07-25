@@ -217,6 +217,9 @@ static void stream_state_changed(struct avdtp_stream *stream,
 			reply = dbus_message_new_method_return(p->msg);
 			g_dbus_send_message(p->conn, reply);
 			pending_request_free(dev, p);
+			if (sink->session) {
+				avdtp_disconnect_session(sink->session);
+			}
 		}
 
 		if (sink->session) {
