@@ -21,7 +21,6 @@
  *
  */
 
-#ifndef STE_BT
 typedef void (*bt_callback_t) (sdp_list_t *recs, int err, gpointer user_data);
 typedef void (*bt_destroy_t) (gpointer user_data);
 
@@ -29,10 +28,4 @@ int bt_search_service(const bdaddr_t *src, const bdaddr_t *dst,
 			uuid_t *uuid, bt_callback_t cb, void *user_data,
 			bt_destroy_t destroy);
 int bt_cancel_discovery(const bdaddr_t *src, const bdaddr_t *dst);
-#endif
-
-gchar *bt_uuid2string(uuid_t *uuid);
-char *bt_name2string(const char *string);
-int bt_string2uuid(uuid_t *uuid, const char *string);
-gchar *bt_list2string(GSList *list);
-GSList *bt_string2list(const gchar *str);
+void bt_clear_cached_session(const bdaddr_t *src, const bdaddr_t *dst);

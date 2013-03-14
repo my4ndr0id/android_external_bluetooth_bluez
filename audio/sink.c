@@ -721,6 +721,7 @@ gboolean sink_is_active(struct audio_device *dev)
 	return FALSE;
 }
 
+#ifndef STE_BT
 gboolean sink_is_streaming(struct audio_device *dev)
 {
 	struct sink *sink = dev->sink;
@@ -735,6 +736,7 @@ gboolean sink_is_streaming(struct audio_device *dev)
 
 	return FALSE;
 }
+#endif
 
 avdtp_state_t sink_get_state(struct audio_device *dev)
 {

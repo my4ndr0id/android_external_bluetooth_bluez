@@ -2,8 +2,8 @@
  *
  *  BlueZ - Bluetooth protocol stack for Linux
  *
- *  Copyright (C) 2004-2010  Marcel Holtmann <marcel@holtmann.org>
- *
+ *  Copyright (C) 2004-2009  Marcel Holtmann <marcel@holtmann.org>
+ *  Copyright (C) 2009 The Android Open Source Project
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,18 +21,5 @@
  *
  */
 
-#ifndef STE_BT
-typedef void (*bt_callback_t) (sdp_list_t *recs, int err, gpointer user_data);
-typedef void (*bt_destroy_t) (gpointer user_data);
-
-int bt_search_service(const bdaddr_t *src, const bdaddr_t *dst,
-			uuid_t *uuid, bt_callback_t cb, void *user_data,
-			bt_destroy_t destroy);
-int bt_cancel_discovery(const bdaddr_t *src, const bdaddr_t *dst);
-#endif
-
-gchar *bt_uuid2string(uuid_t *uuid);
-char *bt_name2string(const char *string);
-int bt_string2uuid(uuid_t *uuid, const char *string);
-gchar *bt_list2string(GSList *list);
-GSList *bt_string2list(const gchar *str);
+void android_set_aid_and_cap();
+int android_set_high_priority(bdaddr_t *ba);
